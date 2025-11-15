@@ -1,128 +1,25 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Churrasco com Amigo Secreto 🎁</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <div class="container">
-        <header>
-            <h1>CHURRASCO COM AMIGO SECRETO 🎁</h1>
-            <p class="id-festa">ID: uzppMbpJjucjqzJEZQLNZKHSVcI2</p>
-        </header>
-
-        <section class="detalhes">
-            <h2>Detalhes da Festa</h2>
-            
-            <div class="info-item">
-                <span class="icon">📍</span>
-                <p><strong>Endereço:</strong> Rua dos Eventos, 456 - Salão de Festas do Condomínio</p>
-            </div>
-            
-            <div class="info-item">
-                <span class="icon">📅</span>
-                <p><strong>Data/Hora:</strong> 20 de Dezembro (Sexta-feira) às 20h00</p>
-            </div>
-            
-            <div class="info-item">
-                <span class="icon">💳</span>
-                <p><strong>Valor Base p/ Pessoa:</strong> R$ 50,00</p>
-            </div>
-            
-            <div class="info-item" id="pix-info">
-                <span class="icon">🔑</span>
-                <p><strong>Custo R$ 50,00:</strong> Apenas loca&ccedil;&atilde;o e infraestrutura (carv&atilde;o, limpeza, etc).</p>
-            </div>
-            
-            <div class="info-item">
-                <span class="icon">💰</span>
-                <p><strong>PIX:</strong> 123.456.789-00 (CPF da Organiza&ccedil;&atilde;o)</p>
-            </div>
-            
-            <div class="info-item">
-                <span class="icon">🎁</span>
-                <p><strong>Amigo Secreto:</strong> At&eacute; R$ 30,00</p>
-            </div>
-
-            <div class="info-item" id="contribuicao">
-                <span class="icon">🍴</span>
-                <p><strong>Sua Contribui&ccedil;&atilde;o:</strong> Cada um deve levar o que ir&aacute; consumir: bebidas (cerveja, refri, &aacute;gua) e comida para churrasco (carne, lingui&ccedil;a, frango, p&atilde;o de alho, arroz, sobremesa, etc.).</p>
-            </div>
-        </section>
-
-        <hr>
-
-        <section class="confirmacao">
-            <h2>Confirme Sua Presença e Custo</h2>
-            <form id="confirmacao-form">
-                
-                <label for="nome">Seu Nome Completo (Participante Principal):</label>
-                <input type="text" id="nome" name="nome" placeholder="Ex: Rogério Silva" required>
-
-                <label for="acompanhantes">N&uacute;mero de Acompanhantes (M&aacute;x 10):</label>
-                <input type="number" id="acompanhantes" name="acompanhantes" min="0" max="10" value="0" required>
-                
-                <div class="valor-total">
-                    <p>Valor Total a Pagar (PIX):</p>
-                    <span id="valor-display">R$ 50,00</span>
-                </div>
-
-                <div class="amigo-secreto-opt">
-                    <input type="checkbox" id="participa-amigo-secreto" name="participa-amigo-secreto">
-                    <label for="participa-amigo-secreto">Quero participar do Amigo Secreto!</label>
-                </div>
-                
-                <div id="nomes-acompanhantes-wrapper" style="display:none;">
-                    <h3>Acompanhantes para o Amigo Secreto:</h3>
-                    </div>
-
-                <button type="submit" id="btn-confirmar">Confirmar Presença</button>
-            </form>
-
-            <p id="mensagem-status" class="status-message"></p>
-        </section>
-
-        <hr>
-
-        <section class="amigo-secreto-area">
-            <h2>Amigo Secreto - Sorteio</h2>
-            
-            <button id="btn-sortear" class="admin-button" style="display:none;">Realizar Sorteio</button>
-
-            <button id="btn-quem-tirei" style="display:none;">🎁 Quem Eu Tirei?</button>
-            
-            <p id="resultado-sorteio" class="status-message"></p>
-        </section>
-
-        <hr>
-
-        <section class="lista-participantes">
-            <h2>Lista de Pessoas Confirmadas (<span id="total-confirmados">0</span> Pessoas)</h2>
-            <ul id="lista-presenca">
-                </ul>
-            <p>Participarão do Amigo Secreto: <span id="total-amigo-secreto">0</span></p>
-        </section>
-
-    </div>
-
+<!-- INCLUSÃO DO FIREBASE -->
+    <!-- Continuamos usando a versão 8.10.0 pois ela é mais simples para HTML puro -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script>
-        // **COLE A SUA CONFIGURAÇÃO DO FIREBASE AQUI**
+        // *** SUA CONFIGURAÇÃO REAL DO FIREBASE ***
         const firebaseConfig = {
-            apiKey: "SEU_API_KEY",
-            authDomain: "SEU_AUTH_DOMAIN",
-            projectId: "SEU_PROJECT_ID",
-            storageBucket: "SEU_STORAGE_BUCKET",
-            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-            appId: "SEU_APP_ID"
+            apiKey: "AIzaSyAqE58H0UriOexZpsDAODfNFSsi5Co4nac",
+            authDomain: "churrasco-com-amigosecreto.firebaseapp.com",
+            projectId: "churrasco-com-amigosecreto",
+            storageBucket: "churrasco-com-amigosecreto.firebasestorage.app",
+            messagingSenderId: "780934998934",
+            appId: "1:780934998934:web:fc30e057ef1b31b3438bb7"
+            // measurementId (G-30NV4J3B96) não é necessário para o Firestore
         };
-        // Inicializa o Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        
+        // Inicializa o Firebase (usando a sintaxe da v8)
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(); // <--- ISTO É CRÍTICO!
+        
+        // Ativa logs de depuração para ver erros no console do navegador
+        firebase.firestore.setLogLevel('debug');
     </script>
     <script src="script.js"></script>
 </body>
