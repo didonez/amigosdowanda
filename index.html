@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Churrasco com Amigo Secreto 🎁</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Formulário de Confirmação de Presença</title>
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
 
     <div class="container">
         <header>
-            <h1>CHURRASCO COM AMIGO SECRETO 🎁</h1>
-            <p class="id-festa">ID: uzppMbpJjucjqzJEZQLNZKHSVcI2</p>
+            <h1 id="titulo-festa" contenteditable="false">CHURRASCO COM AMIGO SECRETO 🎁</h1>
+            <p class="id-festa">ID da Festa: uzppMbpJjucjqzJEZQLNZKHSVcI2</p>
         </header>
 
         <section class="detalhes">
@@ -19,38 +19,40 @@
             
             <div class="info-item">
                 <span class="icon">📍</span>
-                <p><strong>Endereço:</strong> Rua dos Eventos, 456 - Salão de Festas do Condomínio</p>
+                <p id="detalhe-endereco" contenteditable="false"><strong>Endereço:</strong> Rua dos Eventos, 456 - Salão de Festas do Condomínio</p>
             </div>
             
             <div class="info-item">
                 <span class="icon">📅</span>
-                <p><strong>Data/Hora:</strong> 20 de Dezembro (Sexta-feira) às 20h00</p>
+                <p id="detalhe-data" contenteditable="false"><strong>Data/Hora:</strong> 20 de Dezembro (Sexta-feira) às 20h00</p>
             </div>
             
             <div class="info-item">
                 <span class="icon">💳</span>
-                <p><strong>Valor Base p/ Pessoa:</strong> R$ 50,00</p>
+                <p id="detalhe-valor" contenteditable="false"><strong>Valor Base p/ Pessoa:</strong> R$ 50,00</p>
             </div>
             
             <div class="info-item" id="pix-info">
                 <span class="icon">🔑</span>
-                <p><strong>Custo R$ 50,00:</strong> Apenas loca&ccedil;&atilde;o e infraestrutura (carv&atilde;o, limpeza, etc).</p>
+                <p id="detalhe-custo" contenteditable="false"><strong>Custo R$ 50,00:</strong> Apenas locação e infraestrutura (carvão, limpeza, etc).</p>
             </div>
             
             <div class="info-item">
                 <span class="icon">💰</span>
-                <p><strong>PIX:</strong> 123.456.789-00 (CPF da Organiza&ccedil;&atilde;o)</p>
+                <p id="detalhe-pix" contenteditable="false"><strong>PIX:</strong> 123.456.789-00 (CPF da Organização)</p>
             </div>
             
             <div class="info-item">
                 <span class="icon">🎁</span>
-                <p><strong>Amigo Secreto:</strong> At&eacute; R$ 30,00</p>
+                <p id="detalhe-as" contenteditable="false"><strong>Amigo Secreto:</strong> Até R$ 30,00</p>
             </div>
 
             <div class="info-item" id="contribuicao">
                 <span class="icon">🍴</span>
-                <p><strong>Sua Contribui&ccedil;&atilde;o:</strong> Cada um deve levar o que ir&aacute; consumir: bebidas (cerveja, refri, &aacute;gua) e comida para churrasco (carne, lingui&ccedil;a, frango, p&atilde;o de alho, arroz, sobremesa, etc.).</p>
+                <p id="detalhe-contribuicao" contenteditable="false"><strong>Sua Contribuição:</strong> Cada um deve levar o que irá consumir: bebidas (cerveja, refri, água) e comida para churrasco (carne, linguiça, frango, pão de alho, arroz, sobremesa, etc.).</p>
             </div>
+            
+            <button id="btn-toggle-edit" class="admin-button" style="display:none; margin-top: 15px;">Editar Detalhes</button>
         </section>
 
         <hr>
@@ -62,7 +64,7 @@
                 <label for="nome">Seu Nome Completo (Participante Principal):</label>
                 <input type="text" id="nome" name="nome" placeholder="Ex: Rogério Silva" required>
 
-                <label for="acompanhantes">N&uacute;mero de Acompanhantes (M&aacute;x 10):</label>
+                <label for="acompanhantes">Número de Acompanhantes (Máx 10):</label>
                 <input type="number" id="acompanhantes" name="acompanhantes" min="0" max="10" value="0" required>
                 
                 <div class="valor-total">
@@ -106,10 +108,13 @@
             <p>Participarão do Amigo Secreto: <span id="total-amigo-secreto">0</span></p>
         </section>
 
+        <section class="admin-actions" style="display:none; padding: 15px;">
+             <button id="btn-nova-festa" class="admin-button">🎉 Iniciar Nova Festa (Apagar Dados)</button>
+             <p class="id-festa" style="margin-top: 10px;">Atenção: Este botão apaga *TODOS* os cadastros do evento atual.</p>
+        </section>
+
     </div>
 
-<!-- INCLUSÃO DO FIREBASE -->
-    <!-- Continuamos usando a versão 8.10.0 pois ela é mais simples para HTML puro -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script>
@@ -121,12 +126,11 @@
             storageBucket: "churrasco-com-amigosecreto.firebasestorage.app",
             messagingSenderId: "780934998934",
             appId: "1:780934998934:web:fc30e057ef1b31b3438bb7"
-            // measurementId (G-30NV4J3B96) não é necessário para o Firestore
         };
         
-        // Inicializa o Firebase (usando a sintaxe da v8)
+        // Inicializa o Firebase e o Firestore
         const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(); // <--- ISTO É CRÍTICO!
+        const db = firebase.firestore(); 
         
         // Ativa logs de depuração para ver erros no console do navegador
         firebase.firestore.setLogLevel('debug');
@@ -134,3 +138,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+```eof
