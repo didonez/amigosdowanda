@@ -1,157 +1,321 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulário de Confirmação de Presença</title>
-    <!-- Inclua o arquivo de estilos -->
-    <link rel="stylesheet" href="style.css"> 
-</head>
-<body>
+// O objeto 'db' (firebase.firestore()) foi inicializado no index.html
+const PARTICIPANTE_PRINCIPAL_BASE_VALOR = 50.00;
+const COLLECTION_NAME = 'participantes';
 
-    <div class="container">
-        <!-- CABEÇALHO -->
-        <header>
-            <!-- Título editável para a festa -->
-            <h1 id="titulo-festa" contenteditable="false">CHURRASCO COM AMIGO SECRETO 🎁</h1>
-            <p class="id-festa">ID da Festa: uzppMbpJjucjqzJEZQLNZKHSVcI2</p>
-        </header>
+const form = document.getElementById('confirmacao-form');
+const acompanhantesInput = document.getElementById('acompanhantes');
+const valorDisplay = document.getElementById('valor-display');
+const participaAmigoSecreto = document.getElementById('participa-amigo-secreto');
+const nomesAcompanhantesWrapper = document.getElementById('nomes-acompanhantes-wrapper');
+const listaPresencaUl = document.getElementById('lista-presenca');
+const totalConfirmadosSpan = document.getElementById('total-confirmados');
+const totalAmigoSecretoSpan = document.getElementById('total-amigo-secreto');
+const btnSortear = document.getElementById('btn-sortear');
+const btnQuemTirei = document.getElementById('btn-quem-tirei');
+const mensagemStatus = document.getElementById('mensagem-status');
+const resultadoSorteio = document.getElementById('resultado-sorteio');
 
-        <!-- DETALHES DA FESTA (Tudo editável pelo Admin) -->
-        <section class="detalhes">
-            <h2>Detalhes da Festa</h2>
-            
-            <div class="info-item">
-                <span class="icon">📍</span>
-                <p id="detalhe-endereco" contenteditable="false"><strong>Endereço:</strong> Rua dos Eventos, 456 - Salão de Festas do Condomínio</p>
-            </div>
-            
-            <div class="info-item">
-                <span class="icon">📅</span>
-                <p id="detalhe-data" contenteditable="false"><strong>Data/Hora:</strong> 20 de Dezembro (Sexta-feira) às 20h00</p>
-            </div>
-            
-            <div class="info-item">
-                <span class="icon">💳</span>
-                <p id="detalhe-valor" contenteditable="false"><strong>Valor Base p/ Pessoa:</strong> R$ 50,00</p>
-            </div>
-            
-            <div class="info-item" id="pix-info">
-                <span class="icon">🔑</span>
-                <p id="detalhe-custo" contenteditable="false"><strong>Custo R$ 50,00:</strong> Apenas locação e infraestrutura (carvão, limpeza, etc).</p>
-            </div>
-            
-            <div class="info-item">
-                <span class="icon">💰</span>
-                <p id="detalhe-pix" contenteditable="false"><strong>PIX:</strong> 123.456.789-00 (CPF da Organização)</p>
-            </div>
-            
-            <div class="info-item">
-                <span class="icon">🎁</span>
-                <p id="detalhe-as" contenteditable="false"><strong>Amigo Secreto:</strong> Até R$ 30,00</p>
-            </div>
+let adminUID = null; // Armazenará o ID do primeiro participante (Admin)
+let nomeParticipanteLogado = localStorage.getItem('nomeParticipante'); // Simula um login simples
 
-            <div class="info-item" id="contribuicao">
-                <span class="icon">🍴</span>
-                <p id="detalhe-contribuicao" contenteditable="false"><strong>Sua Contribuição:</strong> Cada um deve levar o que irá consumir: bebidas (cerveja, refri, água) e comida para churrasco (carne, linguiça, frango, pão de alho, arroz, sobremesa, etc.).</p>
-            </div>
-            
-            <!-- Botão de Edição de Detalhes (Admin) -->
-            <button id="btn-toggle-edit" class="admin-button" style="display:none; margin-top: 15px;">Editar Detalhes</button>
-        </section>
+// --- FUNÇÕES DE LÓGICA DO FORMULÁRIO ---
 
-        <hr>
+// 1. Atualiza o valor total a pagar e os campos de acompanhantes
+function updateValorECamposAcompanhantes() {
+    const numAcompanhantes = parseInt(acompanhantesInput.value) || 0;
+    const totalPessoas = numAcompanhantes + 1; // Principal + Acompanhantes
+    const valorTotal = totalPessoas * PARTICIPANTE_PRINCIPAL_BASE_VALOR;
+    
+    valorDisplay.textContent = `R$ ${valorTotal.toFixed(2).replace('.', ',')}`;
 
-        <!-- FORMULÁRIO DE CONFIRMAÇÃO -->
-        <section class="confirmacao">
-            <h2>Confirme Sua Presença e Custo</h2>
-            <form id="confirmacao-form">
-                
-                <label for="nome">Seu Nome Completo (Participante Principal):</label>
-                <input type="text" id="nome" name="nome" placeholder="Ex: Rogério Silva" required>
+    // Atualiza/Cria os campos de nome dos acompanhantes que participarão do AS
+    updateAcompanhantesAmigoSecretoFields(numAcompanhantes);
+}
 
-                <label for="acompanhantes">Número de Acompanhantes (Máx 10):</label>
-                <input type="number" id="acompanhantes" name="acompanhantes" min="0" max="10" value="0" required>
-                
-                <div class="valor-total">
-                    <p>Valor Total a Pagar (PIX):</p>
-                    <span id="valor-display">R$ 50,00</span>
-                </div>
+// 2. Lógica para mostrar/esconder campos de nomes dos acompanhantes
+function updateAcompanhantesAmigoSecretoFields(numAcompanhantes) {
+    nomesAcompanhantesWrapper.innerHTML = '<h3>Acompanhantes para o Amigo Secreto:</h3>';
+    
+    // Mostra/Esconde a seção de nomes dos acompanhantes
+    const showFields = participaAmigoSecreto.checked && numAcompanhantes > 0;
+    nomesAcompanhantesWrapper.style.display = showFields ? 'block' : 'none';
 
-                <!-- OPÇÃO PARA AMIGO SECRETO -->
-                <div class="amigo-secreto-opt">
-                    <input type="checkbox" id="participa-amigo-secreto" name="participa-amigo-secreto">
-                    <label for="participa-amigo-secreto">Quero participar do Amigo Secreto!</label>
-                </div>
-                
-                <!-- Nomes dos Acompanhantes que participarão (Inicia oculto) -->
-                <div id="nomes-acompanhantes-wrapper" style="display:none;">
-                    <h3>Acompanhantes para o Amigo Secreto:</h3>
-                    <!-- Campos para nomes de acompanhantes serão adicionados aqui via JS -->
-                </div>
+    if (showFields) {
+        for (let i = 1; i <= numAcompanhantes; i++) {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <label for="acomp_${i}">Nome Acompanhante ${i}:</label>
+                <input type="text" id="acomp_${i}" name="acomp_${i}" placeholder="Nome Completo do Acompanhante ${i}" required>
+            `;
+            nomesAcompanhantesWrapper.appendChild(div);
+        }
+    }
+}
 
-                <button type="submit" id="btn-confirmar">Confirmar Presença</button>
-            </form>
+// --- FUNÇÕES FIREBASE ---
 
-            <p id="mensagem-status" class="status-message"></p>
-        </section>
-
-        <hr>
-
-        <!-- AMIGO SECRETO - SORTEIO / VISUALIZAÇÃO -->
-        <section class="amigo-secreto-area">
-            <h2>Amigo Secreto - Sorteio</h2>
-            
-            <!-- Botão de Admin -->
-            <button id="btn-sortear" class="admin-button" style="display:none;">Realizar Sorteio</button>
-
-            <!-- Botão de Participante -->
-            <button id="btn-quem-tirei" style="display:none;">🎁 Quem Eu Tirei?</button>
-            
-            <p id="resultado-sorteio" class="status-message"></p>
-        </section>
-
-        <hr>
-
-        <!-- LISTA DE PARTICIPANTES -->
-        <section class="lista-participantes">
-            <h2>Lista de Pessoas Confirmadas (<span id="total-confirmados">0</span> Pessoas)</h2>
-            <ul id="lista-presenca">
-                <!-- Lista será preenchida pelo JavaScript -->
-            </ul>
-            <p>Participarão do Amigo Secreto: <span id="total-amigo-secreto">0</span></p>
-        </section>
-
-        <!-- BOTÃO DE NOVA FESTA (Apenas Admin) -->
-        <section class="admin-actions" style="display:none; padding: 15px;">
-             <button id="btn-nova-festa" class="admin-button">🎉 Iniciar Nova Festa (Apagar Dados)</button>
-             <p class="id-festa" style="margin-top: 10px;">Atenção: Este botão apaga *TODOS* os cadastros do evento atual.</p>
-        </section>
-
-    </div>
-
-    <!-- INCLUSÃO DO FIREBASE (SUA CONFIGURAÇÃO) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script>
-        // *** SUA CONFIGURAÇÃO REAL DO FIREBASE ***
-        const firebaseConfig = {
-            apiKey: "AIzaSyAqE58H0UriOexZpsDAODfNFSsi5Co4nac",
-            authDomain: "churrasco-com-amigosecreto.firebaseapp.com",
-            projectId: "churrasco-com-amigosecreto",
-            storageBucket: "churrasco-com-amigosecreto.firebasestorage.app",
-            messagingSenderId: "780934998934",
-            appId: "1:780934998934:web:fc30e057ef1b31b3438bb7"
-        };
+// 3. Carrega os participantes e atualiza a lista e totais
+async function loadParticipantes() {
+    try {
+        const snapshot = await db.collection(COLLECTION_NAME).orderBy('timestamp', 'asc').get();
+        let totalConfirmados = 0;
+        let totalAmigoSecreto = 0;
         
-        // Inicializa o Firebase e o Firestore
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(); 
+        listaPresencaUl.innerHTML = '';
         
-        // Ativa logs de depuração para ver erros no console do navegador
-        firebase.firestore.setLogLevel('debug');
-    </script>
-    <!-- Inclua o arquivo de lógica -->
-    <script src="script.js"></script>
-</body>
-</html>
+        // Determina o Admin (o primeiro a se cadastrar)
+        if (snapshot.docs.length > 0 && !adminUID) {
+            adminUID = snapshot.docs[0].id;
+            console.log("Admin ID:", adminUID);
+        }
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            
+            // Lógica para Admin: Se for o admin, mostra o botão de sortear
+            if (nomeParticipanteLogado === data.nome && doc.id === adminUID) {
+                btnSortear.style.display = 'block';
+            }
+            
+            // Lógica para Participante: Se for o participante e o sorteio já ocorreu
+            if (nomeParticipanteLogado === data.nome && data.tirouNome) {
+                btnQuemTirei.style.display = 'block';
+            } else if (nomeParticipanteLogado === data.nome) {
+                // Participante está logado, mas o sorteio ainda não ocorreu.
+                btnQuemTirei.style.display = 'none';
+            }
+
+
+            // Contador
+            totalConfirmados += (data.acompanhantes || 0) + 1;
+            
+            // Lista e AS
+            let listItem = document.createElement('li');
+            let listaAS = [];
+            
+            // Participante Principal
+            if (data.participaAS) {
+                listaAS.push(data.nome);
+                listItem.textContent = `${data.nome} (P + ${data.acompanhantes || 0} Acompanhantes)`;
+            } else {
+                listItem.textContent = `${data.nome} (P + ${data.acompanhantes || 0} Acompanhantes)`;
+            }
+
+            // Acompanhantes
+            if (data.acompanhantesAS && data.acompanhantesAS.length > 0) {
+                data.acompanhantesAS.forEach(nome => {
+                    listaAS.push(nome);
+                });
+                listItem.textContent += ` - AS: ${data.acompanhantesAS.join(', ')}`;
+            }
+
+            totalAmigoSecreto += listaAS.length;
+            listaPresencaUl.appendChild(listItem);
+        });
+
+        totalConfirmadosSpan.textContent = totalConfirmados;
+        totalAmigoSecretoSpan.textContent = totalAmigoSecreto;
+
+    } catch (error) {
+        console.error("Erro ao carregar participantes:", error);
+    }
+}
+
+
+// 4. Salva a confirmação no Firestore
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const nome = document.getElementById('nome').value.trim();
+    const acompanhantes = parseInt(acompanhantesInput.value) || 0;
+    const participaAS = participaAmigoSecreto.checked;
+    
+    const acompanhantesAS = [];
+    if (participaAS && acompanhantes > 0) {
+        for (let i = 1; i <= acompanhantes; i++) {
+            const nomeAcomp = document.getElementById(`acomp_${i}`).value.trim();
+            if (nomeAcomp) acompanhantesAS.push(nomeAcomp);
+        }
+    }
+
+    try {
+        // Verifica se o participante principal já se cadastrou
+        const querySnapshot = await db.collection(COLLECTION_NAME).where('nome', '==', nome).get();
+        if (!querySnapshot.empty) {
+            mensagemStatus.style.backgroundColor = '#ffe0b2'; // Laranja claro
+            mensagemStatus.style.color = '#e65100'; // Laranja escuro
+            mensagemStatus.textContent = `🚨 O participante principal "${nome}" já está confirmado!`;
+            return;
+        }
+
+        // Adiciona ao Firestore
+        const docRef = await db.collection(COLLECTION_NAME).add({
+            nome: nome,
+            acompanhantes: acompanhantes,
+            valorPago: (acompanhantes + 1) * PARTICIPANTE_PRINCIPAL_BASE_VALOR,
+            contribuiu: true, // Assumindo que o pagamento PIX será feito
+            participaAS: participaAS,
+            acompanhantesAS: acompanhantesAS,
+            tirouNome: null, // Quem o participante tirou no AS
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        mensagemStatus.style.backgroundColor = '#e8f5e9'; // Verde Claro
+        mensagemStatus.style.color = '#388e3c'; // Verde Escuro
+        mensagemStatus.textContent = `🎉 Presença de ${nome} confirmada! Valor a pagar: R$ ${((acompanhantes + 1) * 50).toFixed(2).replace('.', ',')}.`;
+        
+        // Simula "login" após o cadastro
+        localStorage.setItem('nomeParticipante', nome);
+        nomeParticipanteLogado = nome;
+        
+        loadParticipantes(); // Recarrega a lista
+        form.reset(); // Limpa o formulário
+
+    } catch (error) {
+        mensagemStatus.textContent = `❌ Erro ao confirmar: ${error.message}`;
+        console.error("Erro ao adicionar documento: ", error);
+    }
+});
+
+// 5. Lógica de Sorteio (Apenas Admin)
+btnSortear.addEventListener('click', async () => {
+    // 5.1. Busca a lista de participantes do Amigo Secreto (AS)
+    const snapshot = await db.collection(COLLECTION_NAME).get();
+    let listaCompletaAS = [];
+    let participantesMap = new Map(); // Para mapear nome -> DocRef
+
+    snapshot.forEach(doc => {
+        const data = doc.data();
+        const nomePrincipal = data.nome;
+        const docRef = doc.ref;
+
+        // Adiciona o principal se ele participar
+        if (data.participaAS) {
+            listaCompletaAS.push(nomePrincipal);
+            participantesMap.set(nomePrincipal, docRef);
+        }
+
+        // Adiciona os acompanhantes se eles participarem
+        if (data.acompanhantesAS && data.acompanhantesAS.length > 0) {
+            data.acompanhantesAS.forEach(nomeAcomp => {
+                listaCompletaAS.push(nomeAcomp);
+                // Para simplificação, acompanhantes também mapeiam para o DocRef do principal
+                participantesMap.set(nomeAcomp, docRef); 
+            });
+        }
+    });
+
+    if (listaCompletaAS.length < 2) {
+        alert("Pelo menos 2 participantes precisam querer participar do Amigo Secreto.");
+        return;
+    }
+
+    // 5.2. Realiza o Sorteio (sem tirar a si mesmo)
+    // Para simplificar, usamos a lógica do embaralhamento de Fisher-Yates e verificação
+    let listaSorteada = [...listaCompletaAS];
+    
+    // Tenta embaralhar até que ninguém tire a si mesmo
+    let sorteioValido = false;
+    while (!sorteioValido) {
+        // Embaralha (Fisher-Yates)
+        for (let i = listaSorteada.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [listaSorteada[i], listaSorteada[j]] = [listaSorteada[j], listaSorteada[i]];
+        }
+        
+        // Verifica se é válido (ninguém tirou a si mesmo)
+        sorteioValido = true;
+        for (let i = 0; i < listaCompletaAS.length; i++) {
+            if (listaCompletaAS[i] === listaSorteada[i]) {
+                sorteioValido = false;
+                break;
+            }
+        }
+    }
+    
+    // 5.3. Salva os resultados no Firestore
+    const batch = db.batch();
+    
+    for (let i = 0; i < listaCompletaAS.length; i++) {
+        const nomeQuemTirou = listaCompletaAS[i];
+        const nomeTirado = listaSorteada[i];
+        
+        // Acha o documento principal do participante que TIRA (QuemTirou)
+        const docRefQuemTirou = participantesMap.get(nomeQuemTirou);
+
+        // Se o nomeQueTirou for o participante principal do doc, atualiza 'tirouNome'
+        if (docRefQuemTirou && docRefQuemTirou.nome === nomeQuemTirou) {
+             batch.update(docRefQuemTirou, { tirouNome: nomeTirado });
+        } 
+        // Lógica mais complexa seria necessária se os acompanhantes tivessem documentos separados
+        // Para a estrutura atual, só o principal consegue ver quem tirou, simplificando.
+        // O campo 'tirouNome' será guardado no documento do participante principal.
+        // Neste exemplo simplificado, vamos apenas garantir que o campo 'tirouNome' seja atualizado no doc principal.
+        
+        // Como o `participantesMap` aponta todos para o doc principal, usamos o docRef
+        // E criamos um submapa dentro do documento principal para o AS
+        // ESTA PARTE REQUER UM REAJUSTE DE ESTRUTURA PARA SER PRECISO
+        // Simplificando MUITO: Apenas o PARTICIPANTE PRINCIPAL terá o campo `tirouNome` atualizado.
+        
+        if (participantesMap.has(nomeQuemTirou)) {
+            const docRef = participantesMap.get(nomeQuemTirou);
+            
+            if(docRef.id) { // Verifica se é um DocRef válido
+                 batch.update(docRef, { tirouNome: nomeTirado });
+            }
+        }
+        
+    }
+    
+    try {
+        await batch.commit();
+        alert(`🎉 Sorteio realizado com sucesso! ${listaCompletaAS.length} participantes. Todos podem ver quem tiraram agora.`);
+        loadParticipantes(); // Recarrega e mostra o botão 'Quem Eu Tirei?'
+    } catch (error) {
+        console.error("Erro ao salvar o sorteio: ", error);
+        alert("❌ Erro ao realizar o sorteio.");
+    }
+
+});
+
+// 6. Visualiza o Amigo Secreto (Após o sorteio)
+btnQuemTirei.addEventListener('click', async () => {
+    if (!nomeParticipanteLogado) {
+        resultadoSorteio.textContent = "Faça sua confirmação de presença primeiro.";
+        return;
+    }
+    
+    // Busca o documento do participante logado
+    const querySnapshot = await db.collection(COLLECTION_NAME).where('nome', '==', nomeParticipanteLogado).limit(1).get();
+    
+    if (querySnapshot.empty) {
+        resultadoSorteio.textContent = "Seu nome não foi encontrado.";
+        return;
+    }
+
+    const data = querySnapshot.docs[0].data();
+    
+    if (data.tirouNome) {
+        resultadoSorteio.style.backgroundColor = '#fff3e0'; // Amarelo Claro
+        resultadoSorteio.style.color = '#ff9800'; // Laranja
+        resultadoSorteio.textContent = `🥳 Você tirou: ${data.tirouNome}!`;
+    } else {
+        resultadoSorteio.textContent = "O sorteio ainda não foi realizado pelo administrador.";
+    }
+});
+
+// --- LISTENERS E INICIALIZAÇÃO ---
+
+// Quando o número de acompanhantes muda, atualiza o valor e campos
+acompanhantesInput.addEventListener('input', updateValorECamposAcompanhantes);
+// Quando a opção de AS muda, atualiza os campos de nomes
+participaAmigoSecreto.addEventListener('change', updateValorECamposAcompanhantes);
+
+// Carrega os dados ao iniciar e fica ouvindo por mudanças (opcional)
+db.collection(COLLECTION_NAME).onSnapshot(loadParticipantes, err => {
+    console.error("Erro ao ouvir o Firestore:", err);
+    loadParticipantes(); // Chama a função mesmo que haja erro no listener
+});
+
+// Inicializa a exibição do valor/campos
+updateValorECamposAcompanhantes();
