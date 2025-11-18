@@ -1,192 +1,158 @@
-```css:Estilos CSS:style.css
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
+    background-color: #f0f2f5;
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
 }
 
 .container {
-    background-color: #ffffff;
-    max-width: 600px;
-    width: 95%;
-    margin: 20px auto;
-    padding: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+/* HEADER (Cabeçalho Roxo) */
 header {
+    background-color: #6a1b9a; /* Um tom de roxo vibrante */
+    color: white;
+    padding: 20px 15px;
     text-align: center;
-    padding-bottom: 10px;
 }
 
-h1 {
-    color: #4CAF50;
-    font-size: 1.8em;
-    margin-bottom: 5px;
+header h1 {
+    font-size: 1.5em;
+    text-transform: uppercase;
+    margin: 0;
+    letter-spacing: 1px;
+}
+
+.id-festa {
+    font-size: 0.8em;
+    opacity: 0.7;
+    margin-top: 5px;
+}
+
+/* SEÇÕES */
+section {
+    padding: 15px;
 }
 
 h2 {
-    border-bottom: 2px solid #eee;
+    color: #333;
+    font-size: 1.2em;
+    margin-top: 0;
     padding-bottom: 5px;
-    margin-top: 20px;
-    color: #555;
-    font-size: 1.4em;
+    border-bottom: 2px solid #eee;
 }
 
 hr {
     border: 0;
-    height: 1px;
-    background-color: #ddd;
-    margin: 25px 0;
+    border-top: 1px solid #eee;
+    margin: 0 15px;
 }
 
-/* Detalhes da Festa */
-.detalhes {
-    background-color: #e8f5e9;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 15px;
-    border: 1px solid #c8e6c9;
-}
-
-.info-item {
+/* DETALHES */
+.detalhes .info-item {
     display: flex;
     align-items: flex-start;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
-.info-item strong {
-    font-weight: bold;
-    color: #388e3c;
-}
-
-.info-item .icon {
+.detalhes .icon {
     font-size: 1.2em;
     margin-right: 10px;
+    color: #6a1b9a;
 }
 
-/* Formulário */
-form label {
+.detalhes p {
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* FORMULÁRIO */
+form label, form input, form button {
     display: block;
-    margin: 10px 0 5px;
-    font-weight: bold;
-}
-
-form input[type="text"],
-form input[type="number"] {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    box-sizing: border-box; /* Garante que padding não mude a largura */
+    box-sizing: border-box;
+    margin-bottom: 10px;
 }
 
+form input[type="text"], form input[type="number"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.valor-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+
+#valor-display {
+    font-weight: bold;
+    color: #6a1b9a;
+    font-size: 1.2em;
+    background-color: #f3e5f5;
+    padding: 8px 15px;
+    border-radius: 4px;
+}
+
+/* Botões */
+#btn-confirmar, #btn-sortear, #btn-quem-tirei {
+    background-color: #6a1b9a;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+#btn-confirmar:hover, #btn-sortear:hover, #btn-quem-tirei:hover {
+    background-color: #4a148c;
+}
+
+/* Lista de Participantes */
+#lista-presenca {
+    list-style: none;
+    padding: 0;
+}
+
+#lista-presenca li {
+    padding: 8px 0;
+    border-bottom: 1px dashed #eee;
+    color: #444;
+}
+
+.status-message {
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    background-color: #e8f5e9; /* Fundo Verde Claro */
+    color: #388e3c; /* Texto Verde Escuro */
+    text-align: center;
+}
+
+/* Amigo Secreto Checkbox */
 .amigo-secreto-opt {
     display: flex;
     align-items: center;
     margin-bottom: 15px;
 }
 
-.amigo-secreto-opt input[type="checkbox"] {
+.amigo-secreto-opt input {
+    width: auto;
     margin-right: 10px;
-    width: 16px;
-    height: 16px;
 }
 
-.valor-total {
-    text-align: center;
-    background-color: #fff3e0;
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    border: 1px solid #ffcc80;
-}
-
-.valor-total p {
-    margin: 0;
-    font-size: 1.1em;
+.amigo-secreto-opt label {
+    margin-bottom: 0;
     font-weight: bold;
 }
-
-.valor-total #valor-display {
-    font-size: 1.6em;
-    color: #ff9800;
-    font-weight: bold;
-}
-
-/* Botões */
-button[type="submit"], .admin-button, #btn-quem-tirei {
-    width: 100%;
-    padding: 12px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1.1em;
-    margin-top: 10px;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-.admin-button {
-    background-color: #f44336; /* Cor para ações administrativas perigosas (reset) */
-}
-
-.admin-button:hover {
-    background-color: #d32f2f;
-}
-
-/* Status e Mensagens */
-.status-message {
-    padding: 10px;
-    border-radius: 6px;
-    margin-top: 15px;
-    text-align: center;
-    font-weight: bold;
-}
-
-/* Lista de Participantes */
-.lista-participantes {
-    margin-top: 20px;
-}
-
-#lista-presenca {
-    list-style-type: none;
-    padding: 0;
-}
-
-#lista-presenca li {
-    background-color: #f9f9f9;
-    border-left: 5px solid #4CAF50;
-    padding: 10px;
-    margin-bottom: 8px;
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.id-festa {
-    font-size: 0.8em;
-    color: #999;
-}
-
-/* Estilos de Edição (para o Admin) */
-[contenteditable="true"] {
-    border: 1px dashed #f9a825 !important;
-    background-color: #fffde7;
-    padding: 5px;
-    border-radius: 5px;
-    transition: all 0.2s;
-}
-```eof
