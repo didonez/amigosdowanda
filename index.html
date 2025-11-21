@@ -86,35 +86,28 @@
 
         <hr>
 
-        <section class="amigo-secreto-area">
-            <h2>Amigo Secreto - Sorteio</h2>
-            
-            <button id="btn-sortear" class="admin-button" style="display:none;">Realizar Sorteio</button>
-
-            <button id="btn-quem-tirei" style="display:none;">🎁 Quem Eu Tirei?</button>
-            
-            <p id="resultado-sorteio" class="status-message"></p>
-        </section>
-
-        <hr>
-
         <section class="lista-participantes">
             <h2>Lista de Pessoas Confirmadas (<span id="total-confirmados">0</span> Pessoas)</h2>
             <ul id="lista-presenca">
                 </ul>
-            <p>Participarão do Amigo Secreto: <span id="total-amigo-secreto">0</span></p>
+        </section>
+
+        <hr>
+
+        <section class="amigo-secreto-list">
+            <h2>🎁 Lista de Participantes do Amigo Secreto (<span id="total-amigo-secreto">0</span> Nomes)</h2>
+            <ul id="lista-amigo-secreto">
+                </ul>
         </section>
         
         <div class="footer-id">
              ID da Festa: uzppMbpJjucjqzJEZQLNZKHSVcI2
         </div>
 
-    </div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    </div> <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script>
-        // *** SUA CONFIGURAÇÃO REAL DO FIREBASE ***
+        // SUA CONFIGURAÇÃO REAL DO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyAqE58H0UriOexZpsDAODfNFSsi5Co4nac",
             authDomain: "churrasco-com-amigosecreto.firebaseapp.com",
@@ -122,14 +115,11 @@
             storageBucket: "churrasco-com-amigosecreto.firebasestorage.app",
             messagingSenderId: "780934998934",
             appId: "1:780934998934:web:fc30e057ef1b31b3438bb7"
-            // measurementId (G-30NV4J3B96) não é necessário para o Firestore
         };
         
-        // Inicializa o Firebase (usando a sintaxe da v8)
         const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(); // <--- ISTO É CRÍTICO!
+        const db = firebase.firestore();
         
-        // Ativa logs de depuração para ver erros no console do navegador
         firebase.firestore.setLogLevel('debug');
     </script>
     <script src="script.js"></script>
