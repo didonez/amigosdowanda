@@ -39,14 +39,22 @@ function salvarConfirmacao(e) {
     const acompanhantes = parseInt(acompanhantesInput.value) || 0;
     const participaAS = participaAmigoSecretoCheckbox.checked;
 
+    if (!nome) {
+        mensagemStatus.textContent = "Por favor, preencha seu nome.";
+        mensagemStatus.style.backgroundColor = '#ffebee';
+        mensagemStatus.style.color = '#d32f2f';
+        return;
+    }
+
     // Se participa do AS e há acompanhantes, coleta os nomes
-    let nomesAmigoSecreto = [];
+    let nomesAcompanhantesAS = [];
     if (participaAS && acompanhantes > 0) {
         const inputsAcompanhantes = nomesAcompanhantesWrapper.querySelectorAll('input[type="text"]');
         inputsAcompanhantes.forEach(input => {
             const nomeAcomp = input.value.trim();
+            // Apenas nomes preenchidos são considerados para o AS
             if (nomeAcomp) {
-                nomesAmigoSecreto.push(nomeAcomp);
+                nomesAcompanhantesAS.push(nomeAcomp);
             }
         });
     }
@@ -55,10 +63,10 @@ function salvarConfirmacao(e) {
     const dados = {
         nome: nome,
         acompanhantes: acompanhantes,
-        participaAS: participaAS, // Novo nome da variável no Firestore: participaAS
-        nomesAmigoSecreto: nomesAmigoSecreto,
+        participaAS: participaAS, // USANDO participaAS (CORRETO)
+        nomesAmigoSecreto: nomesAcompanhantesAS,
         valorPago: 50,
-        contribuir: true, // Ou a lógica que você usa para definir isso
+        contribuir: true, 
         timestamp: new firebase.firestore.Timestamp.now()
     };
 
@@ -81,14 +89,11 @@ function salvarConfirmacao(e) {
         });
 }
 
-// --- FUNÇÕES DE RENDERIZAÇÃO E CARREGAMENTO (AS SUAS ORIGINAIS) ---
+// --- FUNÇÕES DE RENDERIZAÇÃO E CARREGAMENTO ---
 
-// Função para atualizar as duas listas
 function renderizarListas(participantes) {
     // Zera as listas antes de repopular
     listaPresenca.innerHTML = '';
-    // A lista Amigo Secreto pode ter tido o ID 'lista-amigo-secreto'
-    // removido no seu HTML, mas o código tenta usá-lo.
     if (listaAmigoSecreto) {
         listaAmigoSecreto.innerHTML = '';
     }
@@ -100,7 +105,7 @@ function renderizarListas(participantes) {
         const dados = doc.data();
         const nomeParticipante = dados.nome || 'Participante Desconhecido';
         const numAcompanhantes = dados.acompanhantes || 0;
-        // Usa o campo 'participaAS' que está no seu banco de dados
+        // CORREÇÃO: Lendo o campo 'participaAS'
         const participaAS = dados.participaAS || false; 
         
         // 1. Contagem Total de Pessoas
@@ -149,9 +154,12 @@ function renderizarListas(participantes) {
 // Configura o Listener em tempo real do Firestore
 function carregarParticipantes() {
     colecaoParticipantes.onSnapshot(snapshot => {
+        // Se a busca for bem-sucedida, remove a mensagem de erro de carregamento
+        mensagemStatus.textContent = ''; 
         renderizarListas(snapshot.docs);
     }, error => {
         console.error("Erro ao buscar participantes: ", error);
+        // Exibe o erro de carregamento apenas na lista, mantendo o formulário utilizável
         listaPresenca.innerHTML = '<li>Erro ao carregar participantes.</li>';
         if (listaAmigoSecreto) {
             listaAmigoSecreto.innerHTML = '<li>Erro ao carregar participantes.</li>';
@@ -172,7 +180,7 @@ function gerenciarCamposAmigoSecreto() {
         
         for (let i = 1; i <= numAcompanhantes; i++) {
             const label = document.createElement('label');
-            label.textContent = `Nome do Acompanhante ${i}:`;
+            label.textContent = `Nome do Acompanhante ${i} (p/ Amigo Secreto):`;
             
             const input = document.createElement('input');
             input.type = 'text';
