@@ -1,4 +1,22 @@
-// Localiza os elementos HTML
+// --- INICIALIZAÇÃO FIREBASE (MOVIDA DO index5.html) ---
+const firebaseConfig = {
+    apiKey: "AIzaSyAqE58H0UriOexZpsDAODfNFSsi5Co4nac",
+    authDomain: "churrasco-com-amigosecreto.firebaseapp.com",
+    projectId: "churrasco-com-amigosecreto",
+    storageBucket: "churrasco-com-amigosecreto.firebasestorage.app",
+    messagingSenderId: "780934998934",
+    appId: "1:780934998934:web:fc30e057ef1b31b3438bb7"
+};
+
+// Inicializa o Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore(); 
+
+// Ativa logs de depuração para ver erros no console do navegador
+firebase.firestore.setLogLevel('debug');
+
+
+// --- LOCALIZAÇÃO DE ELEMENTOS HTML ---
 const listaPresenca = document.getElementById('lista-presenca');
 const listaAmigoSecreto = document.getElementById('lista-amigo-secreto');
 const totalConfirmadosSpan = document.getElementById('total-confirmados');
@@ -13,28 +31,25 @@ const valorDisplay = document.getElementById('valor-display');
 const mensagemStatus = document.getElementById('mensagem-status');
 const nomesAcompanhantesWrapper = document.getElementById('nomes-acompanhantes-wrapper');
 
-
-// O ID da festa deve ser o mesmo usado na URL/DB
+// O ID da festa
 const ID_FESTA = 'uzppMbpJjucjqzJEZQLNZKHSVcI2'; 
-// A coleção 'participantes' dentro do documento 'festas/ID_FESTA'
+// Caminho correto da coleção: festas/{ID_FESTA}/participantes
 const colecaoParticipantes = db.collection('festas').doc(ID_FESTA).collection('participantes');
 
 // --- FUNÇÕES DE LÓGICA DE NEGÓCIO ---
 
 function calcularValor() {
-    // Apenas o participante principal paga R$ 50,00
     valorDisplay.textContent = 'R$ 50,00';
 }
 
 function salvarConfirmacao(e) {
     e.preventDefault();
 
-    // Resetar mensagens
+    // Feedback visual
     mensagemStatus.textContent = "Salvando...";
-    mensagemStatus.style.backgroundColor = '#fff3e0'; // Amarelo Claro
-    mensagemStatus.style.color = '#ff9800'; // Laranja
+    mensagemStatus.style.backgroundColor = '#fff3e0'; 
+    mensagemStatus.style.color = '#ff9800'; 
 
-    // Coleta dos dados
     const nome = nomeInput.value.trim();
     const acompanhantes = parseInt(acompanhantesInput.value) || 0;
     const participaAS = participaAmigoSecretoCheckbox.checked;
@@ -46,24 +61,21 @@ function salvarConfirmacao(e) {
         return;
     }
 
-    // Se participa do AS e há acompanhantes, coleta os nomes
     let nomesAcompanhantesAS = [];
     if (participaAS && acompanhantes > 0) {
         const inputsAcompanhantes = nomesAcompanhantesWrapper.querySelectorAll('input[type="text"]');
         inputsAcompanhantes.forEach(input => {
             const nomeAcomp = input.value.trim();
-            // Apenas nomes preenchidos são considerados para o AS
             if (nomeAcomp) {
                 nomesAcompanhantesAS.push(nomeAcomp);
             }
         });
     }
 
-    // Estrutura de dados para o Firebase
     const dados = {
         nome: nome,
         acompanhantes: acompanhantes,
-        participaAS: participaAS, // USANDO participaAS (CORRETO)
+        participaAS: participaAS, // USANDO participaAS para salvar (CORRETO)
         nomesAmigoSecreto: nomesAcompanhantesAS,
         valorPago: 50,
         contribuir: true, 
@@ -73,10 +85,9 @@ function salvarConfirmacao(e) {
     colecaoParticipantes.add(dados)
         .then(() => {
             mensagemStatus.textContent = "Presença confirmada com sucesso!";
-            mensagemStatus.style.backgroundColor = '#e8f5e9'; // Verde Claro
-            mensagemStatus.style.color = '#388e3c'; // Verde Escuro
+            mensagemStatus.style.backgroundColor = '#e8f5e9'; 
+            mensagemStatus.style.color = '#388e3c'; 
             confirmacaoForm.reset();
-            // Recalcula o valor e oculta campos extras
             calcularValor();
             nomesAcompanhantesWrapper.style.display = 'none';
             nomesAcompanhantesWrapper.innerHTML = '<h3>Acompanhantes para o Amigo Secreto:</h3>';
@@ -84,17 +95,16 @@ function salvarConfirmacao(e) {
         .catch(error => {
             console.error("Erro ao salvar no Firestore: ", error);
             mensagemStatus.textContent = "Erro ao confirmar presença. Tente novamente.";
-            mensagemStatus.style.backgroundColor = '#ffebee'; // Vermelho Claro
-            mensagemStatus.style.color = '#d32f2f'; // Vermelho Escuro
+            mensagemStatus.style.backgroundColor = '#ffebee'; 
+            mensagemStatus.style.color = '#d32f2f'; 
         });
 }
 
 // --- FUNÇÕES DE RENDERIZAÇÃO E CARREGAMENTO ---
 
 function renderizarListas(participantes) {
-    // Zera as listas antes de repopular
     listaPresenca.innerHTML = '';
-    if (listaAmigoSecreto) {
+    if (listaAmigoSecreto) { 
         listaAmigoSecreto.innerHTML = '';
     }
 
@@ -105,20 +115,17 @@ function renderizarListas(participantes) {
         const dados = doc.data();
         const nomeParticipante = dados.nome || 'Participante Desconhecido';
         const numAcompanhantes = dados.acompanhantes || 0;
-        // CORREÇÃO: Lendo o campo 'participaAS'
+        // CORREÇÃO CRÍTICA: Lendo o campo 'participaAS' do seu DB (CORRETO)
         const participaAS = dados.participaAS || false; 
         
-        // 1. Contagem Total de Pessoas
         totalPessoas += (1 + numAcompanhantes); 
         
-        // 2. Cria item para a Lista de Presença Completa
         const liPresenca = document.createElement('li');
-        
         let textoPresenca = `${nomeParticipante} (P + ${numAcompanhantes} Acompanhante${numAcompanhantes === 1 ? '' : 's'})`;
         
         if (participaAS) {
             textoPresenca += ' - 🎁 **Amigo Secreto Sim**';
-            totalAmigoSecreto += 1; // Participante principal
+            totalAmigoSecreto += 1; 
         } else {
             textoPresenca += ' - Amigo Secreto Não';
         }
@@ -126,13 +133,12 @@ function renderizarListas(participantes) {
         liPresenca.innerHTML = textoPresenca;
         listaPresenca.appendChild(liPresenca);
 
-        // 3. Cria item para a Lista Exclusiva do Amigo Secreto
+        // Renderiza na lista de Amigo Secreto se o elemento existir
         if (participaAS && listaAmigoSecreto) {
             const liAmigoSecreto = document.createElement('li');
-            liAmigoSecreto.textContent = nomeParticipante; // Apenas o nome do principal
+            liAmigoSecreto.textContent = nomeParticipante; 
             listaAmigoSecreto.appendChild(liAmigoSecreto);
 
-            // Adiciona Acompanhantes que participam do Amigo Secreto (se houver)
             if (dados.nomesAmigoSecreto && dados.nomesAmigoSecreto.length > 0) {
                 dados.nomesAmigoSecreto.forEach(nomeAcompanhante => {
                     const liAcomp = document.createElement('li');
@@ -144,7 +150,6 @@ function renderizarListas(participantes) {
         }
     });
 
-    // Atualiza os totais no HTML
     totalConfirmadosSpan.textContent = totalPessoas;
     if (totalAmigoSecretoSpan) {
         totalAmigoSecretoSpan.textContent = totalAmigoSecreto;
@@ -154,15 +159,14 @@ function renderizarListas(participantes) {
 // Configura o Listener em tempo real do Firestore
 function carregarParticipantes() {
     colecaoParticipantes.onSnapshot(snapshot => {
-        // Se a busca for bem-sucedida, remove a mensagem de erro de carregamento
         mensagemStatus.textContent = ''; 
         renderizarListas(snapshot.docs);
     }, error => {
         console.error("Erro ao buscar participantes: ", error);
-        // Exibe o erro de carregamento apenas na lista, mantendo o formulário utilizável
-        listaPresenca.innerHTML = '<li>Erro ao carregar participantes.</li>';
+        // Sugere verificar as regras, já que o erro de permissão é o mais provável
+        listaPresenca.innerHTML = '<li>Erro ao carregar participantes. Verifique as Regras do Firebase.</li>';
         if (listaAmigoSecreto) {
-            listaAmigoSecreto.innerHTML = '<li>Erro ao carregar participantes.</li>';
+            listaAmigoSecreto.innerHTML = '<li>Erro ao carregar participantes. Verifique as Regras do Firebase.</li>';
         }
     });
 }
@@ -195,7 +199,7 @@ function gerenciarCamposAmigoSecreto() {
 // --- EVENT LISTENERS ---
 document.addEventListener('DOMContentLoaded', () => {
     carregarParticipantes();
-    calcularValor(); // Calcula o valor inicial
+    calcularValor(); 
 });
 
 confirmacaoForm.addEventListener('submit', salvarConfirmacao);
